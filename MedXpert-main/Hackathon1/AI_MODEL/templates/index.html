@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medical Report Generator</title>
+    <style>
+        /* Basic Styling */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 900px;
+            margin: 50px auto;
+            background-color: #fff;
+            padding: 30px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        h1 {
+            text-align: center;
+            color: #4CAF50;
+        }
+        .form-section {
+            margin-top: 20px;
+        }
+        .form-section input[type="file"],
+        .form-section input[type="text"] {
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        .form-section label {
+            font-size: 16px;
+        }
+        .submit-btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .submit-btn:hover {
+            background-color: #45a049;
+        }
+        .result-section {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .result-section h2 {
+            color: #333;
+        }
+        .report-content {
+            margin-top: 10px;
+            color: #555;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Medical Report Generator</h1>
+        <form method="POST" enctype="multipart/form-data">
+            <div class="form-section">
+                <label for="pdf_file">Upload a PDF file with Symptoms:</label><br>
+                <input type="file" name="pdf_file" id="pdf_file" accept=".pdf" required>
+                <br>
+                <label for="phone_number">Phone Number:</label><br>
+                <input type="text" name="phone_number" id="phone_number" maxlength="10" placeholder="Enter 10-digit Phone Number" required pattern="\d{10}">
+                <br>
+                <button type="submit" class="submit-btn">Generate Report</button>
+            </div>
+        </form>
+
+        {% if report %}
+            <div class="result-section">
+                <h2>Generated Report</h2>
+                <div class="report-content">
+                    <p><strong>Lab Report:</strong></p>
+                    <pre>{{ report }}</pre>
+                    <p><strong>Recommended Doctor Specialization:</strong> {{ recommended_doctor }}</p>
+                </div>
+                <script>
+                    fetch('/api/data', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            recommended_doctor: recommendedDoctor,
+                            phone_number: phoneNumber
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log(data);  // Debugging: Check what is received
+                    
+                        if (data.error) {
+                            alert(data.error);
+                        } else {
+                            console.log('Matched Doctors:', data.doctors); // Debugging: Ensure doctors list is received
+                    
+                            // Update the UI with matched doctor details
+                            const resultSection = document.querySelector(".result-section .report-content");
+                            resultSection.innerHTML += <h3>Matched Doctors:</h3>;
+                    
+                            data.doctors.forEach((doctor) => {
+                                const doctorDetails = document.createElement("div");
+                                doctorDetails.innerHTML = `
+                                    <p>Name: ${doctor.Name}</p>
+                                    <p>Speciality: ${doctor['Doctor Specialization']}</p>
+                                    <p>Contact: ${doctor.Contact}</p>
+                                    <hr>`;
+                                resultSection.appendChild(doctorDetails);
+                            });
+                        }
+                    })
+                    .catch((error) => {
+                        console.error("Error:", error);
+                        alert("Something went wrong. Please try again.");
+                    });
+                    
+                </script>
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>

@@ -1,0 +1,6 @@
+flask
+pandas
+torch
+sentence-transformers
+transformers
+PyPDF2
